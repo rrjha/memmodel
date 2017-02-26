@@ -5,7 +5,7 @@
 #define TAGSIZE (1<<29)
 #define NWAY 32
 
-cache::cache(uint32 cachesize, memory *nextlevel)
+cache::cache(uint32 cachesize, memory *lowerlevel)
 {
     //ctor
     //allocate space for cache
@@ -18,7 +18,7 @@ cache::cache(uint32 cachesize, memory *nextlevel)
     m_cachemem = new cacheblk* [m_nsets];
     for (uint32 i=0; i < m_nsets; i++)
         m_cachemem[i] = new cacheblk [NWAY];
-    m_nextlevel = nextlevel;
+    m_lowerlevel = lowerlevel;
 }
 
 cache::~cache()
@@ -28,14 +28,13 @@ cache::~cache()
         delete [] m_cachemem[i];
     delete [] m_cachemem;
     m_cachemem = NULL;
-    m_nextlevel = NULL;
+    m_lowerlevel = NULL;
 }
 
 
-uint32 cache::lru_evict(uint32 set_val, uint32 tag_val) {
+uint32 cache::find_lru(uint32 set_val) {
     int i=0;
     uint32 lru_index = 0, min_atime = m_cachemem[set_val][0].laccess;
-    uint32 address = blk_addr(set_val, tag_val);
 
     for (i=0; i < NWAY; i++) {
         if (m_cachemem[set_val][i].laccess < min_atime){
@@ -43,12 +42,6 @@ uint32 cache::lru_evict(uint32 set_val, uint32 tag_val) {
             min_atime = m_cachemem[set_val][i].laccess;
         }
     }
-    // Now check if the to-be replaced block is dirty, if so, send a write back to LLC
-    // Note since we are not simulating L1 and thus no enforced inclusivity so there is a possiblity of WB miss
-    if(m_cachemem[set_val][lru_index].state == EDirty)
-        m_nextlevel->request(address, EWbDirty);
-    else // Eclean
-        m_nextlevel->request(address, ECleanEvict);
     return lru_index;
 }
 
@@ -72,19 +65,20 @@ bool cache::find_block(uint32 set_val, uint32 tag_val, uint32 *pindex) {
         *pindex = i;
     else if (empty_index < 0)
         // No place - Evict LRU
-        *pindex = lru_evict(set_val, tag_val);
+        *pindex = find_lru(set_val);
     else
         *pindex = empty_index;
     return found;
 }
 
-void cache::request(uint32 address, access_type req_type) {
+bool cache::handle_request(uint32 address, access_type req_type) {
     uint32 set_val = (address & m_setmask) >> m_setshift;
     uint32 tag_val = (address && m_tagmask) >> m_tagshift;
+    bool retval = true;
 
     switch(req_type) {
     case EReadReq:
-        handle_read_req(set_val, tag_val);
+        retval = handle_read_req(set_val, tag_val);
         break;
 
     case ECleanEvict:
@@ -96,7 +90,13 @@ void cache::request(uint32 address, access_type req_type) {
         handle_dirtyevict_req(set_val, tag_val);
         break;
 
+    // Handle inavlidate req generated from model
+    case EInvalidate:
+        handle_invalidate_req(set_val, tag_val);
+        break;
+
     default:
         printf("Error - Undefined request type - %u\n", req_type);
     }
+    return retval;
 }
