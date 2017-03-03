@@ -38,6 +38,7 @@ class cache : public memory
         }
         bool find_block(uint32 set_val, uint32 tag_val, uint32 *pindex);
         uint32 find_lru(uint32 set_val);
+        uint32 find_mru(uint32 set_val);
 
         // Virtual methods to be overridden by actual caches
         virtual bool handle_read_req(uint32 set_val, uint32 tag_val) = 0;

@@ -45,9 +45,22 @@ uint32 cache::find_lru(uint32 set_val) {
     return lru_index;
 }
 
-/*  Helper function - finds if the block exists in this set_val.                     *
- *  Returns true if block found and sets index to index of block.                *
- *  Else returns false and index of first empty index is returned in out param   */
+uint32 cache::find_mru(uint32 set_val) {
+    int i=0;
+    uint32 mru_index = 0, max_atime = m_cachemem[set_val][0].laccess;
+
+    for (i=0; i < NWAY; i++) {
+        if (m_cachemem[set_val][i].laccess > max_atime){
+            mru_index = i;
+            max_atime = m_cachemem[set_val][i].laccess;
+        }
+    }
+    return mru_index;
+}
+
+/*  Helper function - finds if the block exists in this set_val.                            *
+ *  Returns true if block found and sets index to index of block.                           *
+ *  Else returns false and index of first empty (or LRU) index is returned in out param     */
 bool cache::find_block(uint32 set_val, uint32 tag_val, uint32 *pindex) {
     bool found = false;
     int i = 0, empty_index = -1;
@@ -64,7 +77,7 @@ bool cache::find_block(uint32 set_val, uint32 tag_val, uint32 *pindex) {
     if(found)
         *pindex = i;
     else if (empty_index < 0)
-        // No place - Evict LRU
+        // No place - provide LRU index
         *pindex = find_lru(set_val);
     else
         *pindex = empty_index;
