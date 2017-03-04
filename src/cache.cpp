@@ -109,7 +109,7 @@ bool cache::handle_request(uint32 address, access_type req_type) {
         break;
 
     default:
-        printf("Error - Undefined request type - %u\n", req_type);
+        trace("Error - Undefined request type - %u\n", req_type);
     }
     return retval;
 }

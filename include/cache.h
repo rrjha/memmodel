@@ -29,6 +29,9 @@ class cache : public memory
             return power;
         }
 
+        virtual void set_higherlevel(memory *higherlevel) = 0;
+        virtual void set_phymem(memory *phymem) = 0;
+
 
     protected:
 

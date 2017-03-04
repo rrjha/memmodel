@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include "exclusivecache.h"
 
-exclusivecache::exclusivecache(uint32 cachesize, memory* lowerlevel, memory *phymem) : cache(cachesize, lowerlevel)
+exclusivecache::exclusivecache(uint32 cachesize, memory* lowerlevel) : cache(cachesize, lowerlevel)
 {
     //ctor
-    m_phymem = phymem;
 }
 
 exclusivecache::~exclusivecache()
@@ -55,7 +54,7 @@ void exclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
     }
     else if (m_phymem){
         /* Block is not cached */
-        printf("Writeback miss in L2 for block 0x%X\n", address);
+        trace("Writeback miss in L2 for block 0x%X\n", address);
     }
     else {
             // Check if we are replacing an old block

@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include "inclusivecache.h"
 
-inclusivecache::inclusivecache(uint32 cachesize, memory *lowerlevel, memory *higherlevel) : cache(cachesize, lowerlevel)
+inclusivecache::inclusivecache(uint32 cachesize, memory *lowerlevel) : cache(cachesize, lowerlevel)
 {
     //ctor
-    m_higherlevel = higherlevel;
 }
 
 inclusivecache::~inclusivecache()
@@ -38,7 +37,7 @@ void inclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
     }
     else {
         /* Block is not cached (WB miss) - This is only likely if inclusivity is not enforced */
-        printf("Writeback miss for block 0x%X\n", address);
+        trace("Writeback miss for block 0x%X\n", address);
     }
 }
 

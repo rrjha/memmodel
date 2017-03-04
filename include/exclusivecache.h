@@ -8,8 +8,10 @@
 class exclusivecache : public cache
 {
     public:
-        exclusivecache(uint32 cachesize, memory* lowerlevel, memory *phymem);
+        exclusivecache(uint32 cachesize, memory* lowerlevel);
         virtual ~exclusivecache();
+        void set_higherlevel(memory *higherlevel){}
+        void set_phymem(memory *phymem) {m_phymem = phymem;}
 
     protected:
         // Realization of virtual methods

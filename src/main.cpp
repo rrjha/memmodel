@@ -8,35 +8,47 @@
 
 #define L2SIZE (1 << 20)
 #define L3SIZE (L2SIZE << 3)
-#define NCORE 1
+
+// Our trace has L2 as shared so wb are having core as -1
+// Hack this to set the core to 0
+#define L2_SHARED_HACK
 
 
 // Global to keep track of relative access clock
-uint64 access_iter = 0;
+uint64 access_iter = -1;
 
-void get_opt(int num_args, char* args[], bool &inclusive, char *filename)
+void get_opt(int num_args, char* args[], bool &inclusive, char *filename, int &ncore)
 {
-    if((num_args < 2) || (num_args > 3)) {
+    int opt;
+    if((num_args < 2) || (num_args > 5)) {
         /* Invalid number of arguments. Displaye usage */
         printf("Incorrect number of arguments.. exiting..\n");
-        printf("Usage: %s [-i/-e] tracefilename\n", args[0]);
+        printf("Usage: %s [-i/-e] [-n <number>] tracefilename\n", args[0]);
         exit(1);
     }
-    if(num_args == 3) {
-        int opt = getopt(num_args, args, "ie");
-        if('i' == opt) {
-            /* Inclusive cache */
-            inclusive = true;
-        } else if('e' == opt){
-            /* Exclusive cache */
-            inclusive = false;
-        } else {
-            /* We don't know why we are here - dump the option and throw error */
-            printf("%c\n", opt);
-            printf("Usage: %s [-i/-e] tracefilename\n", args[0]);
+
+    if(num_args >= 3) {
+        while ((opt = getopt(num_args, args, "ien:")) != -1) {
+            if('i' == opt) {
+                /* Inclusive cache */
+                inclusive = true;
+            } else if('e' == opt){
+                /* Exclusive cache */
+                inclusive = false;
+            } else if('n' == opt) {
+                ncore = atoi(optarg);
+            } else {
+                /* We don't know why we are here - dump the option and throw error */
+                trace("%c\n", opt);
+                printf("Usage: %s [-i/-e] [-n <number>] tracefilename\n", args[0]);
+                exit(1);
+            }
+        }
+        if(optind >= num_args) {
+            printf("Expected trace file name after options\n");
             exit(1);
         }
-        strcpy(filename, args[2]);
+        strcpy(filename, args[optind]);
     } else {
         strcpy(filename, args[1]);
         inclusive = true;
@@ -50,8 +62,10 @@ void parse_request (int &core, access_type &curr_req, uint32 &curr_addr, const c
     char *temp = copy_str;
 
     // Remove unecessary tokens of timestamp and name
-    token = strsep(&temp, ": ");
-    token = strsep(&temp, ": ");
+    token = strsep(&temp, ":");
+    temp++;
+    token = strsep(&temp, ":");
+    temp++;
 
     // Remove "Core-" and get the core.
     temp += 5;
@@ -71,6 +85,9 @@ void parse_request (int &core, access_type &curr_req, uint32 &curr_addr, const c
         break;
 
         case 'W':
+#ifdef L2_SHARED_HACK
+            core = (core == -1) ? 0 : core;
+#endif
             temp += 10;
             if(!strncmp(temp, "WritebackDirty", 14)) {
                 curr_req = EWbDirty;
@@ -86,6 +103,7 @@ void parse_request (int &core, access_type &curr_req, uint32 &curr_addr, const c
             // Don't handle other requests for now just return invalid
             curr_req = EInvalidAccess;
     }
+    free(copy_str);
 }
 
 
@@ -96,50 +114,59 @@ int main(int argc, char *argv[]) {
     physicalmemory mem;
     bool inclusive = false;
     char tracefile[256], line[512];
-    int core;
+    int ncore = 1, core;
     access_type curr_req = EInvalidAccess;
     uint32 curr_addr = 0;
 
-    get_opt(argc, argv, inclusive, tracefile);
+    get_opt(argc, argv, inclusive, tracefile, ncore);
     FILE *fin = fopen(tracefile, "r");
     if(NULL == fin) {
         perror("Program exiting due to error.. \n");
         exit(1);
     }
 
-    // Caches
-    cache *l2cache[NCORE] = {0}, *l3cache[NCORE] = {0};
+    // Caches - Shared L3 and private L2
+    cache **l2cache = NULL, *l3cache = NULL;
+    l2cache = new cache*[ncore];
 
     if(inclusive) {
-        for (int i=0; i<NCORE; i++) {
-            l2cache[i] = new inclusivecache(L2SIZE, l3cache[i], NULL);
-            l3cache[i] = new inclusivecache(L3SIZE, &mem, l2cache[i]);
+        l3cache = new inclusivecache(L3SIZE, &mem);
+        for (int i=0; i<ncore; i++) {
+            l2cache[i] = new inclusivecache(L2SIZE, l3cache);
+            l2cache[i]->set_higherlevel(NULL);
         }
+        // Note for ncore > 1 we need to have coherency protocols to initiate back trigger e.g, backward invlaidation
+    if (ncore == 1)
+        l3cache->set_higherlevel(l2cache[0]);
     } else {
-        for (int i=0; i<NCORE; i++) {
-            l2cache[i] = new exclusivecache(L2SIZE, l3cache[i], &mem);
-            l3cache[i] = new exclusivecache(L3SIZE, &mem, NULL);
+        l3cache = new exclusivecache(L3SIZE, &mem);
+        for (int i=0; i<ncore; i++) {
+            l2cache[i] = new exclusivecache(L2SIZE, l3cache);
+            l2cache[i]->set_phymem(&mem);
         }
+    // To Check - May not be required as we don't communicate with higher levels in victim cache
+    if (ncore == 1)
+        l3cache->set_phymem(NULL);
     }
 
     /* Read file line by line and process */
     while (fgets(line, sizeof(line), fin)) {
+        access_iter++;
         //remove the trailing \n
         if (line[strlen(line)-1] == '\n')
             line[strlen(line)-1] = '\0';
         //And remove the trailing \r for dos format input files
         if (line[strlen(line)-1] == '\r')
             line[strlen(line)-1] = '\0';
-        printf("read line %s\n", line);
+        trace("read line %s\n", line);
         parse_request(core, curr_req, curr_addr, line);
-        if(EInvalidAccess != curr_req)
+        if((core > -1) &&(EInvalidAccess != curr_req))
             l2cache[core]->handle_request(curr_addr, curr_req);
     }
 
-    for (int i=0; i<NCORE; i++) {
+    for (int i=0; i<ncore; i++)
         delete l2cache[i];
-        delete l3cache[i];
-    }
+    delete l3cache;
 
     fclose(fin);
 

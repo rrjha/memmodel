@@ -7,8 +7,10 @@
 class inclusivecache : public cache
 {
     public:
-        inclusivecache(uint32 cachesize, memory *lowerlevel, memory *higherlevel);
+        inclusivecache(uint32 cachesize, memory *lowerlevel);
         virtual ~inclusivecache();
+        void set_higherlevel(memory *higherlevel) { m_higherlevel = higherlevel; }
+        void set_phymem(memory *phymem) {}
 
     protected:
         // Realization of virtual methods
