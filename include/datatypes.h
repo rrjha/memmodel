@@ -8,5 +8,4 @@ typedef int int32;
 typedef long long int64;
 typedef unsigned long long uint64;
 
-
 #endif // DATATYPES_H

@@ -1,6 +1,6 @@
 #include "includes.h"
 
-#define L2SIZE (1 << 20)
+#define L2SIZE (1 << 17)
 #define L3SIZE (L2SIZE << 3)
 
 // Our trace has L2 as shared so wb are having core as -1
@@ -161,9 +161,9 @@ int main(int argc, char *argv[]) {
     /********************************************* Dump Stat for simulation ***************************************/
 
     printf("******************************************* Simulation Statistics *******************************************\n");
-    printf("L3 write count = %u\n", l3cache->getWriteCount());
+    printf("L3 write count = %llu\n", l3cache->getWriteCount());
     for (int i=0; i<ncore; i++)
-        printf("Core%u L2 write count = %u\n", i, l2cache[i]->getWriteCount());
+        printf("Core%u L2 write count = %llu\n", i, l2cache[i]->getWriteCount());
     printf("*************************************************************************************************************\n");
 
     for (int i=0; i<ncore; i++)
