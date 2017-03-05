@@ -1,7 +1,7 @@
 #ifndef PHYSICALMEMORY_H
 #define PHYSICALMEMORY_H
 
-#include "memory.h"
+#include "includes.h"
 
 
 class physicalmemory : public memory

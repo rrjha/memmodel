@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include "exclusivecache.h"
+#include "includes.h"
 
 exclusivecache::exclusivecache(uint32 cachesize, memory* lowerlevel) : cache(cachesize, lowerlevel)
 {

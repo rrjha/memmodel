@@ -1,7 +1,7 @@
 #ifndef EXCLUSIVECACHE_H
 #define EXCLUSIVECACHE_H
 
-#include "cache.h"
+#include "includes.h"
 
 //Implements L3 as victim cache thus keeping L2 and L3 exclusive
 

@@ -1,7 +1,7 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "datatypes.h"
+#include "includes.h"
 
 extern uint64 access_iter;
 

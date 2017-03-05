@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include "physicalmemory.h"
+#include "includes.h"
 
 
 bool physicalmemory::handle_request(uint32 address, access_type req_type) {

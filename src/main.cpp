@@ -1,10 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include "physicalmemory.h"
-#include "inclusivecache.h"
-#include "exclusivecache.h"
+#include "includes.h"
 
 #define L2SIZE (1 << 20)
 #define L3SIZE (L2SIZE << 3)

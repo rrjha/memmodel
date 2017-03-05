@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include "cache.h"
+#include "includes.h"
 
 #define BLKSIZE 64
 #define TAGSIZE (1<<29)

@@ -1,7 +1,7 @@
 #ifndef INCLUSIVECACHE_H
 #define INCLUSIVECACHE_H
 
-#include "cache.h"
+#include "includes.h"
 
 
 class inclusivecache : public cache

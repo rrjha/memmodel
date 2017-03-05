@@ -1,5 +1,4 @@
-#include <stdio.h>
-#include "inclusivecache.h"
+#include "includes.h"
 
 inclusivecache::inclusivecache(uint32 cachesize, memory *lowerlevel) : cache(cachesize, lowerlevel)
 {
