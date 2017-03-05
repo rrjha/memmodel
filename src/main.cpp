@@ -158,6 +158,14 @@ int main(int argc, char *argv[]) {
             l2cache[core]->handle_request(curr_addr, curr_req);
     }
 
+    /********************************************* Dump Stat for simulation ***************************************/
+
+    printf("******************************************* Simulation Statistics *******************************************\n");
+    printf("L3 write count = %u\n", l3cache->getWriteCount());
+    for (int i=0; i<ncore; i++)
+        printf("Core%u L2 write count = %u\n", i, l2cache[i]->getWriteCount());
+    printf("*************************************************************************************************************\n");
+
     for (int i=0; i<ncore; i++)
         delete l2cache[i];
     delete l3cache;

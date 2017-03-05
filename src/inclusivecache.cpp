@@ -33,6 +33,7 @@ void inclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
         //Data found - Update the last access
         m_cachemem[set_val][index].state = EDirty;
         m_cachemem[set_val][index].laccess = access_iter;
+        m_writecount++;
     }
     else {
         /* Block is not cached (WB miss) - This is only likely if inclusivity is not enforced */
@@ -73,6 +74,7 @@ bool inclusivecache::handle_read_req(uint32 set_val, uint32 tag_val) {
         m_cachemem[set_val][index].state = EClean;
         m_cachemem[set_val][index].tag = tag_val;
         m_cachemem[set_val][index].laccess = access_iter;
+        m_writecount++;
     }
     return true;
 }

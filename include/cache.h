@@ -28,6 +28,7 @@ class cache : public memory
                 power++;
             return power;
         }
+        uint32 getWriteCount() { return m_writecount; }
 
         virtual void set_higherlevel(memory *higherlevel) = 0;
         virtual void set_phymem(memory *phymem) = 0;
@@ -55,6 +56,7 @@ class cache : public memory
         uint32 m_setmask, m_tagmask;
         cacheblk **m_cachemem;
         memory *m_lowerlevel;
+        uint32 m_writecount;
 };
 
 #endif // CACHE_H

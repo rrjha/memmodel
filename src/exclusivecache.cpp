@@ -32,6 +32,7 @@ void exclusivecache::handle_cleanevict_req(uint32 set_val, uint32 tag_val){
             m_cachemem[set_val][index].tag = tag_val;
             // Update as MRU
             m_cachemem[set_val][index].laccess = access_iter;
+            m_writecount++;
         }
     }
 }
@@ -50,6 +51,8 @@ void exclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
             m_cachemem[set_val][index].laccess = access_iter;
         else
             m_cachemem[set_val][index].laccess = 0;
+        //increment the write count irrespective of L2 or L3 as data is written back (mirrored)
+        m_writecount++;
     }
     else if (m_phymem){
         /* Block is not cached */
@@ -70,6 +73,7 @@ void exclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
         m_cachemem[set_val][index].tag = tag_val;
         // Set as LRU
         m_cachemem[set_val][index].laccess = access_iter;
+        m_writecount++;
     }
 }
 
@@ -112,6 +116,7 @@ bool exclusivecache::handle_read_req(uint32 set_val, uint32 tag_val) {
         m_cachemem[set_val][index].state = EClean;
         m_cachemem[set_val][index].tag = tag_val;
         m_cachemem[set_val][index].laccess = access_iter;
+        m_writecount++;
     }
     return retval;
 }

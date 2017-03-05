@@ -18,6 +18,7 @@ cache::cache(uint32 cachesize, memory *lowerlevel)
     for (uint32 i=0; i < m_nsets; i++)
         m_cachemem[i] = new cacheblk [NWAY];
     m_lowerlevel = lowerlevel;
+    m_writecount = 0;
 }
 
 cache::~cache()
