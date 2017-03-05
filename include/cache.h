@@ -30,8 +30,8 @@ class cache : public memory
         }
         uint64 getWriteCount() { return m_writecount; }
 
-        virtual void set_higherlevel(memory *higherlevel) = 0;
-        virtual void set_phymem(memory *phymem) = 0;
+        void set_higherlevel(cache **highlevel, uint32 highCount) { m_highlevel = highlevel; m_highCount = highCount; }
+        void set_phymem(memory *phymem) { m_phymem = phymem; }
 
 
     protected:
@@ -56,6 +56,9 @@ class cache : public memory
         uint64 m_setmask, m_tagmask;
         cacheblk **m_cachemem;
         memory *m_lowerlevel;
+        cache **m_highlevel;
+        uint32 m_highCount;
+        memory *m_phymem;
         uint64 m_writecount;
 };
 

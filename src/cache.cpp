@@ -29,6 +29,8 @@ cache::~cache()
     delete [] m_cachemem;
     m_cachemem = NULL;
     m_lowerlevel = NULL;
+    m_highlevel = NULL;
+    m_phymem = NULL;
 }
 
 

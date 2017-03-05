@@ -8,7 +8,6 @@ inclusivecache::inclusivecache(uint32 cachesize, memory *lowerlevel) : cache(cac
 inclusivecache::~inclusivecache()
 {
     //dtor
-    m_higherlevel = NULL;
 }
 
 void inclusivecache::handle_invalidate_req(uint32 set_val, uint32 tag_val) {
@@ -67,8 +66,9 @@ bool inclusivecache::handle_read_req(uint32 set_val, uint32 tag_val) {
                 m_lowerlevel->handle_request(address, ECleanEvict);
 
             //Force inclusivity for L2 to L3
-            if(m_higherlevel)
-                m_higherlevel->handle_request(address, EInvalidate);
+            for (uint32 i=0; i < m_highCount; i++)
+                if(m_highlevel[i])
+                    m_highlevel[i]->handle_request(address, EInvalidate);
         }
        //Now place the new block in the cache
         m_cachemem[set_val][index].state = EClean;

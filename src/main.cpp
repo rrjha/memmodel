@@ -1,7 +1,7 @@
 #include "includes.h"
 
 #define L2SIZE (1 << 20)
-#define L3SIZE (L2SIZE << 3)
+#define L3SIZE (L2SIZE << 2)
 
 // Our trace has L2 as shared so wb are having core as -1
 // Hack this to set the core to 0
@@ -127,19 +127,17 @@ int main(int argc, char *argv[]) {
         l3cache = new inclusivecache(L3SIZE, &mem);
         for (int i=0; i<ncore; i++) {
             l2cache[i] = new inclusivecache(L2SIZE, l3cache);
-            l2cache[i]->set_higherlevel(NULL);
+            l2cache[i]->set_higherlevel(NULL, 0);
         }
-        // Note for ncore > 1 we need to have coherency protocols to initiate back trigger e.g, backward invlaidation
-    if (ncore == 1)
-        l3cache->set_higherlevel(l2cache[0]);
+        // Note for ncore > 1 we need to have coherency protocols
+        l3cache->set_higherlevel(l2cache, ncore);
     } else {
         l3cache = new exclusivecache(L3SIZE, &mem);
         for (int i=0; i<ncore; i++) {
             l2cache[i] = new exclusivecache(L2SIZE, l3cache);
             l2cache[i]->set_phymem(&mem);
         }
-    // To Check - May not be required as we don't communicate with higher levels in victim cache
-    if (ncore == 1)
+        // To Check - May not be required as we don't communicate with higher levels in victim cache
         l3cache->set_phymem(NULL);
     }
 
@@ -164,7 +162,7 @@ int main(int argc, char *argv[]) {
     printf("L3 write count = %llu\n", l3cache->getWriteCount());
     for (int i=0; i<ncore; i++)
         printf("Core%u L2 write count = %llu\n", i, l2cache[i]->getWriteCount());
-    printf("*************************************************************************************************************\n");
+    printf("*************************************************************************************************************\n\n\n");
 
     for (int i=0; i<ncore; i++)
         delete l2cache[i];
