@@ -1,6 +1,6 @@
 #include "includes.h"
 
-#define L2SIZE (1 << 17)
+#define L2SIZE (1 << 20)
 #define L3SIZE (L2SIZE << 3)
 
 // Our trace has L2 as shared so wb are having core as -1

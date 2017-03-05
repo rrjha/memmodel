@@ -15,7 +15,7 @@ void exclusivecache::handle_cleanevict_req(uint32 set_val, uint32 tag_val){
     if(!m_phymem) {
         /* This is L3 - Allocate this block if not existing */
         uint32 index = 0;
-        uint32 address = blk_addr(set_val, tag_val);
+        uint64 address = blk_addr(set_val, tag_val);
         bool found = find_block(set_val, tag_val, &index);
         if(!found) {
             // Check if we are replacing an old block
@@ -40,7 +40,7 @@ void exclusivecache::handle_cleanevict_req(uint32 set_val, uint32 tag_val){
 void exclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
     /* This is a dirty block - Note it */
     uint32 index = 0;
-    uint32 address = blk_addr(set_val, tag_val);
+    uint64 address = blk_addr(set_val, tag_val);
     bool found = find_block(set_val, tag_val, &index);
 
     if(found){
@@ -56,7 +56,7 @@ void exclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
     }
     else if (m_phymem){
         /* Block is not cached */
-        trace("Writeback miss in L2 for block 0x%X\n", address);
+        trace("Writeback miss in L2 for block 0x%llX\n", address);
     }
     else {
             // Check if we are replacing an old block
@@ -80,7 +80,7 @@ void exclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
 /* We don't care about the data in simulation */
 bool exclusivecache::handle_read_req(uint32 set_val, uint32 tag_val) {
     uint32 index = 0;
-    uint32 address = blk_addr(set_val, tag_val);
+    uint64 address = blk_addr(set_val, tag_val);
     bool found = find_block(set_val, tag_val, &index);
     bool retval = false;
 

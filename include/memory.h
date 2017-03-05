@@ -18,7 +18,7 @@ typedef enum mem_access_type {
 class memory
 {
     public:
-        virtual bool handle_request(uint32 address, access_type req_type) = 0;
+        virtual bool handle_request(uint64 address, access_type req_type) = 0;
 };
 
 #endif // MEMORY_H

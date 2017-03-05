@@ -12,8 +12,8 @@ cache::cache(uint32 cachesize, memory *lowerlevel)
     m_setshift = getbits(BLKSIZE);
     m_tagshift = getbits(m_nsets) + m_setshift;
 
-    m_setmask = (m_nsets - 1) << m_setshift;
-    m_tagmask = (TAGSIZE - 1) << m_setshift;
+    m_setmask = ((uint64)(m_nsets - 1)) << m_setshift;
+    m_tagmask = ((uint64)(TAGSIZE - 1)) << m_tagshift;
     m_cachemem = new cacheblk* [m_nsets];
     for (uint32 i=0; i < m_nsets; i++)
         m_cachemem[i] = new cacheblk [NWAY];
@@ -84,9 +84,9 @@ bool cache::find_block(uint32 set_val, uint32 tag_val, uint32 *pindex) {
     return found;
 }
 
-bool cache::handle_request(uint32 address, access_type req_type) {
+bool cache::handle_request(uint64 address, access_type req_type) {
     uint32 set_val = (address & m_setmask) >> m_setshift;
-    uint32 tag_val = (address && m_tagmask) >> m_tagshift;
+    uint32 tag_val = (address & m_tagmask) >> m_tagshift;
     bool retval = true;
 
     switch(req_type) {

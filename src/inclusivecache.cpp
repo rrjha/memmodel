@@ -26,7 +26,7 @@ void inclusivecache::handle_cleanevict_req(uint32 set_val, uint32 tag_val){
 void inclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
     /* This is a dirty block - Note it */
     uint32 index = 0;
-    uint32 address = blk_addr(set_val, tag_val);
+    uint64 address = blk_addr(set_val, tag_val);
     bool found = find_block(set_val, tag_val, &index);
 
     if(found){
@@ -37,14 +37,14 @@ void inclusivecache::handle_dirtyevict_req(uint32 set_val, uint32 tag_val){
     }
     else {
         /* Block is not cached (WB miss) - This is only likely if inclusivity is not enforced */
-        trace("Writeback miss for block 0x%X\n", address);
+        trace("Writeback miss for block 0x%llX\n", address);
     }
 }
 
 /* We don't care about the data in simulation so just return true for inclusive */
 bool inclusivecache::handle_read_req(uint32 set_val, uint32 tag_val) {
     uint32 index = 0;
-    uint32 address = blk_addr(set_val, tag_val);
+    uint64 address = blk_addr(set_val, tag_val);
     bool found = find_block(set_val, tag_val, &index);
 
     if(found){

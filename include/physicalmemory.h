@@ -9,7 +9,7 @@ class physicalmemory : public memory
     public:
         physicalmemory() { /* Nothing to construct */ }
         ~physicalmemory() { /* Nothing to destroy */ }
-        bool handle_request(uint32 address, access_type req_type);
+        bool handle_request(uint64 address, access_type req_type);
 };
 
 #endif // PHYSICALMEMORY_H
