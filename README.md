@@ -4,7 +4,7 @@ The simulation uses address trace generated from Gem5
 
 Usage: memmodel [-i/-e] [-n <number>] tracefilename
 
-Options
+Options:
 
 i for inclusive LLC
 
